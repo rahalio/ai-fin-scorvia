@@ -1,0 +1,734 @@
+openapi: 3.0.3
+info:
+  title: Scorvia
+  version: 0.1.0
+  description: >-
+    Governed AutoML credit-decision factory with interpretability, regime, imbalance, and production promotion gates.
+  x-product-slug: ai-fin-scorvia
+  x-source: ai-in-financial/aiinfinance-190206170721/
+servers:
+  - url: https://api.example.com
+tags:
+  - name: Projects
+    description: Credit modelling projects
+  - name: AutoML
+    description: Pipeline search and candidates
+  - name: Evaluations
+    description: Imbalance and regime evaluation
+  - name: Promotions
+    description: Production promotion gates
+  - name: Scoring
+    description: Production credit scoring
+  - name: Referrals
+    description: Human referral queues
+  - name: Monitoring
+    description: Drift and performance incidents
+  - name: Audits
+    description: Audit exports
+paths:
+  /v1/projects:
+    get:
+      operationId: listCreditProjects
+      tags: [Projects]
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeCreditProject"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createCreditProject
+      tags: [Projects]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreditProjectCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeCreditProject"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+  /v1/projects/{projectId}:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    get:
+      operationId: getCreditProject
+      tags: [Projects]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeCreditProject"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/projects/{projectId}/automl-runs:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    get:
+      operationId: listAutoMLRuns
+      tags: [AutoML]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeAutoMLRun"
+    post:
+      operationId: startAutoMLRun
+      tags: [AutoML]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AutoMLRunCreate"
+      responses:
+        "202":
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeAutoMLRun"
+  /v1/automl-runs/{runId}/candidates:
+    parameters:
+      - $ref: "#/components/parameters/RunId"
+    get:
+      operationId: listCandidates
+      tags: [AutoML]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeCandidateModel"
+  /v1/candidates/{candidateId}/evaluations:
+    parameters:
+      - $ref: "#/components/parameters/CandidateId"
+    post:
+      operationId: runEvaluation
+      tags: [Evaluations]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EvaluationCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeEvaluationReport"
+  /v1/candidates/{candidateId}/promotions:
+    parameters:
+      - $ref: "#/components/parameters/CandidateId"
+    post:
+      operationId: requestPromotion
+      tags: [Promotions]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PromotionRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopePromotionGate"
+  /v1/promotions/{promotionId}/decide:
+    parameters:
+      - $ref: "#/components/parameters/PromotionId"
+    post:
+      operationId: decidePromotion
+      tags: [Promotions]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PromotionDecision"
+      responses:
+        "200":
+          description: Decided
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopePromotionGate"
+  /v1/scoring/score:
+    post:
+      operationId: scoreApplication
+      tags: [Scoring]
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScoreRequest"
+      responses:
+        "200":
+          description: Score result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeScoreResult"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+  /v1/referrals:
+    get:
+      operationId: listReferrals
+      tags: [Referrals]
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeReferral"
+  /v1/referrals/{referralId}/resolve:
+    parameters:
+      - $ref: "#/components/parameters/ReferralId"
+    post:
+      operationId: resolveReferral
+      tags: [Referrals]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReferralResolve"
+      responses:
+        "200":
+          description: Resolved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeReferral"
+  /v1/monitoring/incidents:
+    get:
+      operationId: listMonitoringIncidents
+      tags: [Monitoring]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvelopeMonitoringIncident"
+    post:
+      operationId: openMonitoringIncident
+      tags: [Monitoring]
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MonitoringIncidentCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeMonitoringIncident"
+  /v1/audits/exports:
+    post:
+      operationId: createScorviaAuditExport
+      tags: [Audits]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuditExportCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataEnvelopeAuditExport"
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      schema: { type: string }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema: { type: string }
+    RunId:
+      name: runId
+      in: path
+      required: true
+      schema: { type: string }
+    CandidateId:
+      name: candidateId
+      in: path
+      required: true
+      schema: { type: string }
+    PromotionId:
+      name: promotionId
+      in: path
+      required: true
+      schema: { type: string }
+    ReferralId:
+      name: referralId
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    NotFound:
+      description: Not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    UnprocessableEntity:
+      description: Unprocessable entity
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+  schemas:
+    ResponseMeta:
+      type: object
+      required: [requestId, timestamp]
+      properties:
+        requestId: { type: string }
+        timestamp: { type: string, format: date-time }
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+
+    CreditProject:
+      type: object
+      required: [id, name, status]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        status: { type: string, enum: [draft, active, archived] }
+        population: { type: string }
+        imbalanceRatio: { type: number }
+    CreditProjectCreate:
+      type: object
+      required: [name, population]
+      properties:
+        name: { type: string }
+        population: { type: string }
+        datasetId: { type: string }
+    AutoMLRun:
+      type: object
+      required: [id, projectId, status]
+      properties:
+        id: { type: string }
+        projectId: { type: string }
+        status: { type: string, enum: [queued, running, completed, failed] }
+        candidateCount: { type: integer }
+    AutoMLRunCreate:
+      type: object
+      properties:
+        maxCandidates: { type: integer }
+        searchBudgetMinutes: { type: integer }
+    CandidateModel:
+      type: object
+      required: [id, runId, algorithm]
+      properties:
+        id: { type: string }
+        runId: { type: string }
+        algorithm: { type: string }
+        hyperparameters: { type: object, additionalProperties: true }
+        lineage: { type: string }
+    EvaluationReport:
+      type: object
+      required: [id, candidateId, passed]
+      properties:
+        id: { type: string }
+        candidateId: { type: string }
+        passed: { type: boolean }
+        metrics: { type: object, additionalProperties: true }
+        regimeTestsPassed: { type: boolean }
+        imbalanceAware: { type: boolean }
+    EvaluationCreate:
+      type: object
+      properties:
+        includeRegimeTests: { type: boolean, default: true }
+        requireImbalanceMetrics: { type: boolean, default: true }
+    PromotionGate:
+      type: object
+      required: [id, candidateId, status]
+      properties:
+        id: { type: string }
+        candidateId: { type: string }
+        status: { type: string, enum: [pending, approved, rejected, waiverRequested] }
+        interpretabilityAttached: { type: boolean }
+        gates: { type: object, additionalProperties: true }
+    PromotionRequest:
+      type: object
+      required: [interpretabilityUri]
+      properties:
+        interpretabilityUri: { type: string, format: uri }
+        notes: { type: string }
+    PromotionDecision:
+      type: object
+      required: [decision]
+      properties:
+        decision: { type: string, enum: [approve, reject, waive] }
+        rationale: { type: string }
+    ScoreRequest:
+      type: object
+      required: [applicationId, features]
+      properties:
+        applicationId: { type: string }
+        deploymentId: { type: string }
+        features: { type: object, additionalProperties: true }
+    ScoreResult:
+      type: object
+      required: [applicationId, pd, decision]
+      properties:
+        applicationId: { type: string }
+        pd: { type: number }
+        decision: { type: string, enum: [grant, refer, deny] }
+        explanation: { type: string }
+        modelId: { type: string }
+    Referral:
+      type: object
+      required: [id, applicationId, status]
+      properties:
+        id: { type: string }
+        applicationId: { type: string }
+        status: { type: string, enum: [open, resolved] }
+        pd: { type: number }
+    ReferralResolve:
+      type: object
+      required: [decision, reasonCode]
+      properties:
+        decision: { type: string, enum: [grant, deny] }
+        reasonCode: { type: string }
+    MonitoringIncident:
+      type: object
+      required: [id, deploymentId, status]
+      properties:
+        id: { type: string }
+        deploymentId: { type: string }
+        status: { type: string, enum: [open, investigating, closed] }
+        incidentType: { type: string, enum: [drift, performance, overrideSpike] }
+    MonitoringIncidentCreate:
+      type: object
+      required: [deploymentId, incidentType]
+      properties:
+        deploymentId: { type: string }
+        incidentType: { type: string, enum: [drift, performance, overrideSpike] }
+        detail: { type: string }
+    AuditExport:
+      type: object
+      required: [id, status]
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [pending, ready, failed] }
+        downloadUri: { type: string, format: uri }
+    AuditExportCreate:
+      type: object
+      required: [periodFrom, periodTo]
+      properties:
+        periodFrom: { type: string, format: date-time }
+        periodTo: { type: string, format: date-time }
+
+    DataEnvelopeCreditProject:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/CreditProject"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeCreditProject:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/CreditProject"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeAutoMLRun:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/AutoMLRun"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeAutoMLRun:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/AutoMLRun"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeCandidateModel:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/CandidateModel"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeCandidateModel:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/CandidateModel"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeEvaluationReport:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/EvaluationReport"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeEvaluationReport:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/EvaluationReport"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopePromotionGate:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/PromotionGate"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopePromotionGate:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/PromotionGate"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeScoreResult:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/ScoreResult"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeScoreResult:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/ScoreResult"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeReferral:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/Referral"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeReferral:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/Referral"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeMonitoringIncident:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/MonitoringIncident"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeMonitoringIncident:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/MonitoringIncident"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
+    DataEnvelopeAuditExport:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/AuditExport"
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+    ListEnvelopeAuditExport:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/AuditExport"
+            nextCursor: { type: string }
+        meta:
+          $ref: "#/components/schemas/ResponseMeta"
+
