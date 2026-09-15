@@ -1,0 +1,142 @@
+openapi: 3.1.0
+info:
+  title: Scoring schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    ScoreResultId:
+      type: string
+      pattern: '^scr_[0-9A-HJKMNP-TV-Z]{26}$'
+    ProductionDeploymentId:
+      type: string
+      pattern: '^dep_[0-9A-HJKMNP-TV-Z]{26}$'
+    ScoreDecision:
+      type: string
+      enum: [grant, refer, deny]
+    EnvironmentLabel:
+      type: string
+      enum: [poc, production]
+    ProductionDeployment:
+      type: object
+      required: [id, tenantId, modelId, environment, active, createdAt, updatedAt]
+      x-dynamodb:
+        domain: SCORING
+        entityType: PRODUCTION_DEPLOYMENT
+        entityTypePk: PRODUCTION_DEPLOYMENTS
+        pkPattern: entity
+        tableType: core
+        softDeleteEnabled: false
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        gsi2Enabled: true
+        gsi2PKFields: [tenantId]
+        gsi2SKFields: [updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/ProductionDeploymentId'
+        tenantId:
+          $ref: ./common/primitives.yaml#/components/schemas/TenantId
+        modelId:
+          type: string
+        candidateId:
+          type: string
+        environment:
+          $ref: '#/components/schemas/EnvironmentLabel'
+        endpointLabel:
+          type: string
+        active:
+          type: boolean
+        policyMapId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ScoreRequest:
+      type: object
+      required: [applicationId, features]
+      properties:
+        applicationId:
+          type: string
+        deploymentId:
+          $ref: '#/components/schemas/ProductionDeploymentId'
+        features:
+          type: object
+          additionalProperties: true
+    ScoreResult:
+      type: object
+      required: [id, tenantId, applicationId, pd, decision, createdAt, updatedAt]
+      x-dynamodb:
+        domain: SCORING
+        entityType: SCORE_RESULT
+        entityTypePk: SCORE_RESULTS
+        pkPattern: entity
+        tableType: core
+        softDeleteEnabled: false
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        gsi2Enabled: true
+        gsi2PKFields: [tenantId]
+        gsi2SKFields: [updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/ScoreResultId'
+        tenantId:
+          $ref: ./common/primitives.yaml#/components/schemas/TenantId
+        applicationId:
+          type: string
+        pd:
+          type: number
+        decision:
+          $ref: '#/components/schemas/ScoreDecision'
+        explanation:
+          type: string
+        modelId:
+          type: string
+        deploymentId:
+          $ref: '#/components/schemas/ProductionDeploymentId'
+        environment:
+          $ref: '#/components/schemas/EnvironmentLabel'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ScoreResultResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ScoreResult'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    ProductionDeploymentResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ProductionDeployment'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    ProductionDeploymentListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProductionDeployment'
+            nextCursor:
+              type: string
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+

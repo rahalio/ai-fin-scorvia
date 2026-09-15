@@ -1,0 +1,159 @@
+openapi: 3.1.0
+info:
+  title: Projects schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    CreditProjectId:
+      type: string
+      pattern: '^prj_[0-9A-HJKMNP-TV-Z]{26}$'
+    DatasetId:
+      type: string
+      pattern: '^dst_[0-9A-HJKMNP-TV-Z]{26}$'
+    ProjectStatus:
+      type: string
+      enum: [draft, active, archived]
+    EnvironmentLabel:
+      type: string
+      enum: [poc, production]
+    CreditProject:
+      type: object
+      required: [id, tenantId, name, status, environment, createdAt, updatedAt]
+      x-dynamodb:
+        domain: PROJECTS
+        entityType: CREDIT_PROJECT
+        entityTypePk: CREDIT_PROJECTS
+        pkPattern: entity
+        tableType: core
+        softDeleteEnabled: false
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        gsi2Enabled: true
+        gsi2PKFields: [tenantId]
+        gsi2SKFields: [updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/CreditProjectId'
+        tenantId:
+          $ref: ./common/primitives.yaml#/components/schemas/TenantId
+        name:
+          type: string
+        status:
+          $ref: '#/components/schemas/ProjectStatus'
+        environment:
+          $ref: '#/components/schemas/EnvironmentLabel'
+        population:
+          type: string
+        imbalanceRatio:
+          type: number
+        datasetId:
+          $ref: '#/components/schemas/DatasetId'
+        featureSetId:
+          type: string
+        purpose:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreditProjectCreate:
+      type: object
+      required: [name, population, environment]
+      properties:
+        name:
+          type: string
+        population:
+          type: string
+        environment:
+          $ref: '#/components/schemas/EnvironmentLabel'
+        datasetId:
+          $ref: '#/components/schemas/DatasetId'
+        purpose:
+          type: string
+        imbalanceRatio:
+          type: number
+    Dataset:
+      type: object
+      required: [id, tenantId, projectId, name, createdAt, updatedAt]
+      x-dynamodb:
+        domain: PROJECTS
+        entityType: DATASET
+        entityTypePk: DATASETS
+        pkPattern: entity
+        tableType: core
+        softDeleteEnabled: false
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        gsi2Enabled: true
+        gsi2PKFields: [tenantId]
+        gsi2SKFields: [updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/DatasetId'
+        tenantId:
+          $ref: ./common/primitives.yaml#/components/schemas/TenantId
+        projectId:
+          $ref: '#/components/schemas/CreditProjectId'
+        name:
+          type: string
+        labelColumn:
+          type: string
+        rowCount:
+          type: integer
+        imbalanceRatio:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    DatasetAttach:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        labelColumn:
+          type: string
+        rowCount:
+          type: integer
+        imbalanceRatio:
+          type: number
+    CreditProjectResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/CreditProject'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    CreditProjectListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreditProject'
+            nextCursor:
+              type: string
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    DatasetResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Dataset'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+

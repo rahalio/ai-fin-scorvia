@@ -1,0 +1,149 @@
+openapi: 3.1.0
+info:
+  title: Scorvia AutoML API
+  version: 0.1.0
+  description: AutoML pipeline search with candidate lineage retention.
+  x-domain: aml
+  x-domain-prefix: AML
+  license:
+    name: Proprietary
+    url: https://scorvia.local/license
+servers:
+  - url: https://api.scorvia.local
+security:
+  - bearerAuth: []
+  - apiKey: []
+tags:
+  - name: AutoML
+  - name: Candidates
+paths:
+  /v1/projects/{projectId}/automl-runs:
+    parameters:
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: listAutoMLRuns
+      summary: List AutoML Runs
+      tags: [AutoML]
+      x-repository: AutoMLRun
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./automl.schemas.yaml#/components/schemas/AutoMLRunListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: startAutoMLRun
+      summary: Start AutoML Run
+      tags: [AutoML]
+      x-repository: AutoMLRun
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./automl.schemas.yaml#/components/schemas/AutoMLRunCreate
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: ./automl.schemas.yaml#/components/schemas/AutoMLRunResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '422':
+          $ref: ./common/responses.yaml#/components/responses/UnprocessableEntity
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/automl-runs/{runId}:
+    parameters:
+      - name: runId
+        in: path
+        required: true
+        schema:
+          $ref: ./automl.schemas.yaml#/components/schemas/AutoMLRunId
+    get:
+      operationId: getAutoMLRun
+      summary: Get AutoML Run
+      tags: [AutoML]
+      x-repository: AutoMLRun
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./automl.schemas.yaml#/components/schemas/AutoMLRunResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/automl-runs/{runId}/candidates:
+    parameters:
+      - name: runId
+        in: path
+        required: true
+        schema:
+          $ref: ./automl.schemas.yaml#/components/schemas/AutoMLRunId
+    get:
+      operationId: listCandidates
+      summary: List Candidates
+      tags: [Candidates]
+      x-repository: CandidateModel
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./automl.schemas.yaml#/components/schemas/CandidateModelListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/candidates/{candidateId}:
+    parameters:
+      - name: candidateId
+        in: path
+        required: true
+        schema:
+          $ref: ./automl.schemas.yaml#/components/schemas/CandidateModelId
+    get:
+      operationId: getCandidate
+      summary: Get Candidate
+      tags: [Candidates]
+      x-repository: CandidateModel
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./automl.schemas.yaml#/components/schemas/CandidateModelResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

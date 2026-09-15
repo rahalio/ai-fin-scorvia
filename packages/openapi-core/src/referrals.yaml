@@ -1,0 +1,104 @@
+openapi: 3.1.0
+info:
+  title: Scorvia Referrals API
+  version: 0.1.0
+  description: Human referral queues for borderline scores.
+  x-domain: ref
+  x-domain-prefix: REF
+  license:
+    name: Proprietary
+    url: https://scorvia.local/license
+servers:
+  - url: https://api.scorvia.local
+security:
+  - bearerAuth: []
+  - apiKey: []
+tags:
+  - name: Referrals
+paths:
+  /v1/referrals:
+    get:
+      operationId: listReferrals
+      summary: List Referrals
+      tags: [Referrals]
+      x-repository: Referral
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+        - name: status
+          in: query
+          schema:
+            $ref: ./referrals.schemas.yaml#/components/schemas/ReferralStatus
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./referrals.schemas.yaml#/components/schemas/ReferralListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/referrals/{referralId}:
+    parameters:
+      - name: referralId
+        in: path
+        required: true
+        schema:
+          $ref: ./referrals.schemas.yaml#/components/schemas/ReferralId
+    get:
+      operationId: getReferral
+      summary: Get Referral
+      tags: [Referrals]
+      x-repository: Referral
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./referrals.schemas.yaml#/components/schemas/ReferralResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/referrals/{referralId}/resolve:
+    parameters:
+      - name: referralId
+        in: path
+        required: true
+        schema:
+          $ref: ./referrals.schemas.yaml#/components/schemas/ReferralId
+    post:
+      operationId: resolveReferral
+      summary: Resolve Referral
+      tags: [Referrals]
+      x-repository: Referral
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./referrals.schemas.yaml#/components/schemas/ReferralResolve
+      responses:
+        '200':
+          description: Resolved
+          content:
+            application/json:
+              schema:
+                $ref: ./referrals.schemas.yaml#/components/schemas/ReferralResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '422':
+          $ref: ./common/responses.yaml#/components/responses/UnprocessableEntity
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

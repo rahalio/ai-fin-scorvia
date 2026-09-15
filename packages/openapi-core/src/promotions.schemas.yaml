@@ -1,0 +1,117 @@
+openapi: 3.1.0
+info:
+  title: Promotions schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    PromotionGateId:
+      type: string
+      pattern: '^prm_[0-9A-HJKMNP-TV-Z]{26}$'
+    PromotionStatus:
+      type: string
+      enum: [pending, approved, rejected, waiverRequested]
+    PromotionDecisionKind:
+      type: string
+      enum: [approve, reject, waive]
+    PromotionGate:
+      type: object
+      required: [id, tenantId, candidateId, status, createdAt, updatedAt]
+      x-dynamodb:
+        domain: PROMOTIONS
+        entityType: PROMOTION_GATE
+        entityTypePk: PROMOTION_GATES
+        pkPattern: entity
+        tableType: core
+        softDeleteEnabled: false
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        gsi2Enabled: true
+        gsi2PKFields: [tenantId]
+        gsi2SKFields: [updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/PromotionGateId'
+        tenantId:
+          $ref: ./common/primitives.yaml#/components/schemas/TenantId
+        candidateId:
+          type: string
+        status:
+          $ref: '#/components/schemas/PromotionStatus'
+        interpretabilityAttached:
+          type: boolean
+        dataSufficiencyPassed:
+          type: boolean
+        imbalanceGatePassed:
+          type: boolean
+        regimeGatePassed:
+          type: boolean
+        monitoringPlanAttached:
+          type: boolean
+        biasGatePassed:
+          type: boolean
+        gates:
+          type: object
+          additionalProperties: true
+        interpretabilityUri:
+          type: string
+          format: uri
+        notes:
+          type: string
+        decidedBy:
+          type: string
+        rationale:
+          type: string
+        waiverGranted:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PromotionRequest:
+      type: object
+      required: [interpretabilityUri]
+      properties:
+        interpretabilityUri:
+          type: string
+          format: uri
+        notes:
+          type: string
+        monitoringPlanUri:
+          type: string
+          format: uri
+    PromotionDecision:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          $ref: '#/components/schemas/PromotionDecisionKind'
+        rationale:
+          type: string
+    PromotionGateResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PromotionGate'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    PromotionGateListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/PromotionGate'
+            nextCursor:
+              type: string
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+

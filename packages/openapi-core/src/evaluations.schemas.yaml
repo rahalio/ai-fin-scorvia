@@ -1,0 +1,156 @@
+openapi: 3.1.0
+info:
+  title: Evaluations schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    EvaluationReportId:
+      type: string
+      pattern: '^evl_[0-9A-HJKMNP-TV-Z]{26}$'
+    InterpretabilityPackId:
+      type: string
+      pattern: '^inp_[0-9A-HJKMNP-TV-Z]{26}$'
+    EvaluationReport:
+      type: object
+      required: [id, tenantId, candidateId, passed, imbalanceAware, createdAt, updatedAt]
+      x-dynamodb:
+        domain: EVALUATIONS
+        entityType: EVALUATION_REPORT
+        entityTypePk: EVALUATION_REPORTS
+        pkPattern: entity
+        tableType: core
+        softDeleteEnabled: false
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        gsi2Enabled: true
+        gsi2PKFields: [tenantId]
+        gsi2SKFields: [updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/EvaluationReportId'
+        tenantId:
+          $ref: ./common/primitives.yaml#/components/schemas/TenantId
+        candidateId:
+          type: string
+        passed:
+          type: boolean
+        imbalanceAware:
+          type: boolean
+        regimeTestsPassed:
+          type: boolean
+        biasCheckPassed:
+          type: boolean
+        metrics:
+          type: object
+          additionalProperties: true
+        failReasons:
+          type: array
+          items:
+            type: string
+        interpretabilityPackId:
+          $ref: '#/components/schemas/InterpretabilityPackId'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    EvaluationCreate:
+      type: object
+      properties:
+        includeRegimeTests:
+          type: boolean
+          default: true
+        requireImbalanceMetrics:
+          type: boolean
+          default: true
+        includeBiasChecks:
+          type: boolean
+          default: true
+    InterpretabilityPack:
+      type: object
+      required: [id, tenantId, candidateId, complete, createdAt, updatedAt]
+      x-dynamodb:
+        domain: EVALUATIONS
+        entityType: INTERPRETABILITY_PACK
+        entityTypePk: INTERPRETABILITY_PACKS
+        pkPattern: entity
+        tableType: core
+        softDeleteEnabled: false
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        gsi2Enabled: true
+        gsi2PKFields: [tenantId]
+        gsi2SKFields: [updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/InterpretabilityPackId'
+        tenantId:
+          $ref: ./common/primitives.yaml#/components/schemas/TenantId
+        candidateId:
+          type: string
+        artefactUri:
+          type: string
+          format: uri
+        narrative:
+          type: string
+        complete:
+          type: boolean
+        adverseActionFactors:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    InterpretabilityPackCreate:
+      type: object
+      required: [artefactUri]
+      properties:
+        artefactUri:
+          type: string
+          format: uri
+        narrative:
+          type: string
+        adverseActionFactors:
+          type: array
+          items:
+            type: string
+    EvaluationReportResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/EvaluationReport'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    EvaluationReportListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/EvaluationReport'
+            nextCursor:
+              type: string
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    InterpretabilityPackResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/InterpretabilityPack'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+

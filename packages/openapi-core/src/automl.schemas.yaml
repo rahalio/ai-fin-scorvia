@@ -1,0 +1,160 @@
+openapi: 3.1.0
+info:
+  title: AutoML schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    AutoMLRunId:
+      type: string
+      pattern: '^aml_[0-9A-HJKMNP-TV-Z]{26}$'
+    CandidateModelId:
+      type: string
+      pattern: '^cnd_[0-9A-HJKMNP-TV-Z]{26}$'
+    RunStatus:
+      type: string
+      enum: [queued, running, completed, failed]
+    AutoMLRun:
+      type: object
+      required: [id, tenantId, projectId, status, createdAt, updatedAt]
+      x-dynamodb:
+        domain: AUTOML
+        entityType: AUTOML_RUN
+        entityTypePk: AUTOML_RUNS
+        pkPattern: entity
+        tableType: core
+        softDeleteEnabled: false
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        gsi2Enabled: true
+        gsi2PKFields: [tenantId]
+        gsi2SKFields: [updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/AutoMLRunId'
+        tenantId:
+          $ref: ./common/primitives.yaml#/components/schemas/TenantId
+        projectId:
+          type: string
+        status:
+          $ref: '#/components/schemas/RunStatus'
+        candidateCount:
+          type: integer
+        maxCandidates:
+          type: integer
+        searchBudgetMinutes:
+          type: integer
+        errorMessage:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AutoMLRunCreate:
+      type: object
+      properties:
+        maxCandidates:
+          type: integer
+        searchBudgetMinutes:
+          type: integer
+    CandidateModel:
+      type: object
+      required: [id, tenantId, runId, algorithm, createdAt, updatedAt]
+      x-dynamodb:
+        domain: AUTOML
+        entityType: CANDIDATE_MODEL
+        entityTypePk: CANDIDATE_MODELS
+        pkPattern: entity
+        tableType: core
+        softDeleteEnabled: false
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        gsi2Enabled: true
+        gsi2PKFields: [tenantId]
+        gsi2SKFields: [updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/CandidateModelId'
+        tenantId:
+          $ref: ./common/primitives.yaml#/components/schemas/TenantId
+        runId:
+          $ref: '#/components/schemas/AutoMLRunId'
+        projectId:
+          type: string
+        algorithm:
+          type: string
+        hyperparameters:
+          type: object
+          additionalProperties: true
+        featureList:
+          type: array
+          items:
+            type: string
+        lineage:
+          type: string
+        minorityPrecision:
+          type: number
+        minorityRecall:
+          type: number
+        aucPr:
+          type: number
+        pinned:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AutoMLRunResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/AutoMLRun'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    AutoMLRunListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/AutoMLRun'
+            nextCursor:
+              type: string
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    CandidateModelResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/CandidateModel'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    CandidateModelListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/CandidateModel'
+            nextCursor:
+              type: string
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+

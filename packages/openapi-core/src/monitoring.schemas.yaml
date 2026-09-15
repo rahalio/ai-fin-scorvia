@@ -1,0 +1,95 @@
+openapi: 3.1.0
+info:
+  title: Monitoring schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    MonitoringIncidentId:
+      type: string
+      pattern: '^mon_[0-9A-HJKMNP-TV-Z]{26}$'
+    IncidentStatus:
+      type: string
+      enum: [open, investigating, closed]
+    IncidentType:
+      type: string
+      enum: [drift, performance, overrideSpike]
+    MonitoringIncident:
+      type: object
+      required: [id, tenantId, deploymentId, status, incidentType, createdAt, updatedAt]
+      x-dynamodb:
+        domain: MONITORING
+        entityType: MONITORING_INCIDENT
+        entityTypePk: MONITORING_INCIDENTS
+        pkPattern: entity
+        tableType: core
+        softDeleteEnabled: false
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        gsi2Enabled: true
+        gsi2PKFields: [tenantId]
+        gsi2SKFields: [updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/MonitoringIncidentId'
+        tenantId:
+          $ref: ./common/primitives.yaml#/components/schemas/TenantId
+        deploymentId:
+          type: string
+        status:
+          $ref: '#/components/schemas/IncidentStatus'
+        incidentType:
+          $ref: '#/components/schemas/IncidentType'
+        detail:
+          type: string
+        disposition:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    MonitoringIncidentCreate:
+      type: object
+      required: [deploymentId, incidentType]
+      properties:
+        deploymentId:
+          type: string
+        incidentType:
+          $ref: '#/components/schemas/IncidentType'
+        detail:
+          type: string
+    MonitoringIncidentDisposition:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: '#/components/schemas/IncidentStatus'
+        disposition:
+          type: string
+    MonitoringIncidentResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/MonitoringIncident'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    MonitoringIncidentListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/MonitoringIncident'
+            nextCursor:
+              type: string
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+

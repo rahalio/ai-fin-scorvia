@@ -1,0 +1,93 @@
+openapi: 3.1.0
+info:
+  title: Scorvia Audits API
+  version: 0.1.0
+  description: Period audit exports of promotions, waivers, and monitoring incidents.
+  x-domain: aud
+  x-domain-prefix: AUD
+  license:
+    name: Proprietary
+    url: https://scorvia.local/license
+servers:
+  - url: https://api.scorvia.local
+security:
+  - bearerAuth: []
+  - apiKey: []
+tags:
+  - name: Audits
+paths:
+  /v1/audits/exports:
+    get:
+      operationId: listAuditExports
+      summary: List Audit Exports
+      tags: [Audits]
+      x-repository: AuditExport
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./audits.schemas.yaml#/components/schemas/AuditExportListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createScorviaAuditExport
+      summary: Create Audit Export
+      tags: [Audits]
+      x-repository: AuditExport
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./audits.schemas.yaml#/components/schemas/AuditExportCreate
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./audits.schemas.yaml#/components/schemas/AuditExportResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '422':
+          $ref: ./common/responses.yaml#/components/responses/UnprocessableEntity
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/audits/exports/{exportId}:
+    parameters:
+      - name: exportId
+        in: path
+        required: true
+        schema:
+          $ref: ./audits.schemas.yaml#/components/schemas/AuditExportId
+    get:
+      operationId: getAuditExport
+      summary: Get Audit Export
+      tags: [Audits]
+      x-repository: AuditExport
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./audits.schemas.yaml#/components/schemas/AuditExportResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

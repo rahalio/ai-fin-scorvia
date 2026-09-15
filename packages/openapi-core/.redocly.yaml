@@ -1,0 +1,39 @@
+apis:
+  identity:
+    root: src/identity.yaml
+  projects:
+    root: src/projects.yaml
+  automl:
+    root: src/automl.yaml
+  evaluations:
+    root: src/evaluations.yaml
+  promotions:
+    root: src/promotions.yaml
+  policy:
+    root: src/policy.yaml
+  scoring:
+    root: src/scoring.yaml
+  referrals:
+    root: src/referrals.yaml
+  monitoring:
+    root: src/monitoring.yaml
+  audits:
+    root: src/audits.yaml
+
+extends:
+  - recommended
+
+rules:
+  no-unused-components: off
+  operation-4xx-response: warn
+  info-license: off
+  info-license-url: off
+  info-license-strict: off
+  tag-description: off
+  operation-operationId: error
+  no-invalid-media-type-examples: off
+
+theme:
+  openapi:
+    generateCodeSamples:
+      languages: []

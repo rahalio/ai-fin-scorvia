@@ -1,0 +1,91 @@
+openapi: 3.1.0
+info:
+  title: Audits schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    AuditExportId:
+      type: string
+      pattern: '^aud_[0-9A-HJKMNP-TV-Z]{26}$'
+    AuditExportStatus:
+      type: string
+      enum: [pending, ready, failed]
+    AuditExport:
+      type: object
+      required: [id, tenantId, status, periodFrom, periodTo, createdAt, updatedAt]
+      x-dynamodb:
+        domain: AUDITS
+        entityType: AUDIT_EXPORT
+        entityTypePk: AUDIT_EXPORTS
+        pkPattern: entity
+        tableType: core
+        softDeleteEnabled: false
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        gsi2Enabled: true
+        gsi2PKFields: [tenantId]
+        gsi2SKFields: [updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/AuditExportId'
+        tenantId:
+          $ref: ./common/primitives.yaml#/components/schemas/TenantId
+        status:
+          $ref: '#/components/schemas/AuditExportStatus'
+        periodFrom:
+          type: string
+          format: date-time
+        periodTo:
+          type: string
+          format: date-time
+        downloadUri:
+          type: string
+          format: uri
+        promotionCount:
+          type: integer
+        waiverCount:
+          type: integer
+        incidentCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AuditExportCreate:
+      type: object
+      required: [periodFrom, periodTo]
+      properties:
+        periodFrom:
+          type: string
+          format: date-time
+        periodTo:
+          type: string
+          format: date-time
+    AuditExportResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/AuditExport'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    AuditExportListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/AuditExport'
+            nextCursor:
+              type: string
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+

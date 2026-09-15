@@ -1,0 +1,92 @@
+openapi: 3.1.0
+info:
+  title: Referrals schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    ReferralId:
+      type: string
+      pattern: '^ref_[0-9A-HJKMNP-TV-Z]{26}$'
+    ReferralStatus:
+      type: string
+      enum: [open, resolved]
+    Referral:
+      type: object
+      required: [id, tenantId, applicationId, status, createdAt, updatedAt]
+      x-dynamodb:
+        domain: REFERRALS
+        entityType: REFERRAL
+        entityTypePk: REFERRALS
+        pkPattern: entity
+        tableType: core
+        softDeleteEnabled: false
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        gsi2Enabled: true
+        gsi2PKFields: [tenantId]
+        gsi2SKFields: [updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/ReferralId'
+        tenantId:
+          $ref: ./common/primitives.yaml#/components/schemas/TenantId
+        applicationId:
+          type: string
+        status:
+          $ref: '#/components/schemas/ReferralStatus'
+        pd:
+          type: number
+        expectedLossImpact:
+          type: number
+        scoreResultId:
+          type: string
+        explanation:
+          type: string
+        resolvedDecision:
+          type: string
+          enum: [grant, deny]
+        reasonCode:
+          type: string
+        resolvedBy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ReferralResolve:
+      type: object
+      required: [decision, reasonCode]
+      properties:
+        decision:
+          type: string
+          enum: [grant, deny]
+        reasonCode:
+          type: string
+    ReferralResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Referral'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    ReferralListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Referral'
+            nextCursor:
+              type: string
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+

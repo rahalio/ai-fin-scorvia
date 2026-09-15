@@ -1,0 +1,159 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+:root {
+  --color-ink: #e8e4df;
+  --color-charcoal-950: #12100e;
+  --color-charcoal-900: #1c1916;
+  --color-charcoal-800: #2a2622;
+  --color-copper: #b87333;
+  --color-steel-gate: #8b9bb4;
+  --color-steel-pass: #3d5a80;
+  --color-pd-blue: #4c6ef5;
+  --color-scrap: #c0392b;
+  --color-ok: #2a9d8f;
+  --font-display: "IBM Plex Sans", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --motion-furnace: 200ms ease-out;
+  --motion-gate: 220ms ease-in-out;
+  --motion-bleed: 280ms ease-out;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { min-height: 100%; }
+
+body {
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(184, 115, 51, 0.12), transparent 45%),
+    linear-gradient(180deg, var(--color-charcoal-950), #0c0b09 70%);
+  background-attachment: fixed;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 0;
+}
+
+#root { position: relative; z-index: 1; }
+
+h1, h2, h3, .display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.mono { font-family: var(--font-mono); }
+
+.panel {
+  background: rgba(28, 25, 22, 0.72);
+  border: 1px solid rgba(184, 115, 51, 0.22);
+  border-radius: var(--radius-md);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(232, 228, 223, 0.18);
+  background: transparent;
+  color: var(--color-ink);
+  padding: 0.45rem 0.85rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background var(--motion-furnace), border-color var(--motion-furnace);
+}
+
+.btn:hover { background: rgba(184, 115, 51, 0.12); }
+
+.btn-primary {
+  background: rgba(184, 115, 51, 0.22);
+  border-color: rgba(184, 115, 51, 0.55);
+  color: #f4e6d4;
+}
+
+.btn-primary:hover { background: rgba(184, 115, 51, 0.34); }
+
+.btn-gate {
+  border-color: rgba(139, 155, 180, 0.5);
+  color: #d5deeb;
+}
+
+.input, .select, textarea.input {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(232, 228, 223, 0.16);
+  background: rgba(18, 16, 14, 0.65);
+  color: var(--color-ink);
+  padding: 0.5rem 0.65rem;
+  font: inherit;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: var(--radius-sm);
+  padding: 0.15rem 0.45rem;
+  font-size: 0.75rem;
+  border: 1px solid transparent;
+}
+
+.chip-poc { background: rgba(192, 57, 43, 0.18); border-color: rgba(192, 57, 43, 0.45); color: #f0b8b2; }
+.chip-prod { background: rgba(42, 157, 143, 0.18); border-color: rgba(42, 157, 143, 0.45); color: #a8e0d8; }
+.chip-steel { background: rgba(139, 155, 180, 0.16); border-color: rgba(139, 155, 180, 0.4); color: #d0d8e6; }
+.chip-copper { background: rgba(184, 115, 51, 0.18); border-color: rgba(184, 115, 51, 0.45); color: #e8c9a4; }
+
+.table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.table th, .table td {
+  text-align: left;
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid rgba(232, 228, 223, 0.08);
+}
+.table th { color: rgba(232, 228, 223, 0.55); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.brand-mark {
+  color: var(--color-copper);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.poc-bleed {
+  animation: bleed-in var(--motion-bleed);
+  background: rgba(192, 57, 43, 0.16);
+  border: 1px solid rgba(192, 57, 43, 0.45);
+  color: #f0b8b2;
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
+@keyframes bleed-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.gate-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(139, 155, 180, 0.25);
+  overflow: hidden;
+}
+.gate-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--color-steel-pass);
+  transition: width var(--motion-gate);
+}

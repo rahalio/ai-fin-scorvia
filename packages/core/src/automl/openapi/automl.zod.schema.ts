@@ -1,0 +1,587 @@
+import { makeApi, Zodios, type ZodiosOptions } from '@zodios/core';
+import { z } from 'zod';
+
+const startAutoMLRun_Body = z
+  .object({
+    maxCandidates: z.number().int(),
+    searchBudgetMinutes: z.number().int(),
+  })
+  .partial()
+  .passthrough();
+const Problem = z
+  .object({
+    type: z.string().url(),
+    title: z.string(),
+    status: z.number().int(),
+    detail: z.string(),
+    instance: z.string().url(),
+    code: z.string(),
+  })
+  .partial()
+  .passthrough();
+const AutoMLRunId = z.string();
+const TenantId = z.string();
+const RunStatus = z.enum(['queued', 'running', 'completed', 'failed']);
+const AutoMLRun = z
+  .object({
+    id: z.string().regex(/^aml_[0-9A-HJKMNP-TV-Z]{26}$/),
+    tenantId: z.string().regex(/^tnt_[0-9A-HJKMNP-TV-Z]{26}$/),
+    projectId: z.string(),
+    status: z.enum(['queued', 'running', 'completed', 'failed']),
+    candidateCount: z.number().int().optional(),
+    maxCandidates: z.number().int().optional(),
+    searchBudgetMinutes: z.number().int().optional(),
+    errorMessage: z.string().optional(),
+    createdAt: z.string().datetime({ offset: true }),
+    updatedAt: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+const ResponseMeta = z
+  .object({
+    requestId: z.string().uuid(),
+    correlationId: z.string(),
+    generatedAt: z.string().datetime({ offset: true }),
+  })
+  .partial()
+  .passthrough();
+const AutoMLRunListResponse = z
+  .object({
+    data: z
+      .object({
+        items: z.array(
+          z
+            .object({
+              id: z.string().regex(/^aml_[0-9A-HJKMNP-TV-Z]{26}$/),
+              tenantId: z.string().regex(/^tnt_[0-9A-HJKMNP-TV-Z]{26}$/),
+              projectId: z.string(),
+              status: z.enum(['queued', 'running', 'completed', 'failed']),
+              candidateCount: z.number().int().optional(),
+              maxCandidates: z.number().int().optional(),
+              searchBudgetMinutes: z.number().int().optional(),
+              errorMessage: z.string().optional(),
+              createdAt: z.string().datetime({ offset: true }),
+              updatedAt: z.string().datetime({ offset: true }),
+            })
+            .passthrough()
+        ),
+        nextCursor: z.string().optional(),
+      })
+      .passthrough(),
+    meta: z
+      .object({
+        requestId: z.string().uuid(),
+        correlationId: z.string(),
+        generatedAt: z.string().datetime({ offset: true }),
+      })
+      .partial()
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
+const AutoMLRunCreate = z
+  .object({
+    maxCandidates: z.number().int(),
+    searchBudgetMinutes: z.number().int(),
+  })
+  .partial()
+  .passthrough();
+const AutoMLRunResponse = z
+  .object({
+    data: z
+      .object({
+        id: z.string().regex(/^aml_[0-9A-HJKMNP-TV-Z]{26}$/),
+        tenantId: z.string().regex(/^tnt_[0-9A-HJKMNP-TV-Z]{26}$/),
+        projectId: z.string(),
+        status: z.enum(['queued', 'running', 'completed', 'failed']),
+        candidateCount: z.number().int().optional(),
+        maxCandidates: z.number().int().optional(),
+        searchBudgetMinutes: z.number().int().optional(),
+        errorMessage: z.string().optional(),
+        createdAt: z.string().datetime({ offset: true }),
+        updatedAt: z.string().datetime({ offset: true }),
+      })
+      .passthrough(),
+    meta: z
+      .object({
+        requestId: z.string().uuid(),
+        correlationId: z.string(),
+        generatedAt: z.string().datetime({ offset: true }),
+      })
+      .partial()
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
+const CandidateModelId = z.string();
+const CandidateModel = z
+  .object({
+    id: z.string().regex(/^cnd_[0-9A-HJKMNP-TV-Z]{26}$/),
+    tenantId: z.string().regex(/^tnt_[0-9A-HJKMNP-TV-Z]{26}$/),
+    runId: z.string().regex(/^aml_[0-9A-HJKMNP-TV-Z]{26}$/),
+    projectId: z.string().optional(),
+    algorithm: z.string(),
+    hyperparameters: z.object({}).partial().passthrough().optional(),
+    featureList: z.array(z.string()).optional(),
+    lineage: z.string().optional(),
+    minorityPrecision: z.number().optional(),
+    minorityRecall: z.number().optional(),
+    aucPr: z.number().optional(),
+    pinned: z.boolean().optional(),
+    createdAt: z.string().datetime({ offset: true }),
+    updatedAt: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+const CandidateModelListResponse = z
+  .object({
+    data: z
+      .object({
+        items: z.array(
+          z
+            .object({
+              id: z.string().regex(/^cnd_[0-9A-HJKMNP-TV-Z]{26}$/),
+              tenantId: z.string().regex(/^tnt_[0-9A-HJKMNP-TV-Z]{26}$/),
+              runId: z.string().regex(/^aml_[0-9A-HJKMNP-TV-Z]{26}$/),
+              projectId: z.string().optional(),
+              algorithm: z.string(),
+              hyperparameters: z.object({}).partial().passthrough().optional(),
+              featureList: z.array(z.string()).optional(),
+              lineage: z.string().optional(),
+              minorityPrecision: z.number().optional(),
+              minorityRecall: z.number().optional(),
+              aucPr: z.number().optional(),
+              pinned: z.boolean().optional(),
+              createdAt: z.string().datetime({ offset: true }),
+              updatedAt: z.string().datetime({ offset: true }),
+            })
+            .passthrough()
+        ),
+        nextCursor: z.string().optional(),
+      })
+      .passthrough(),
+    meta: z
+      .object({
+        requestId: z.string().uuid(),
+        correlationId: z.string(),
+        generatedAt: z.string().datetime({ offset: true }),
+      })
+      .partial()
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
+const CandidateModelResponse = z
+  .object({
+    data: z
+      .object({
+        id: z.string().regex(/^cnd_[0-9A-HJKMNP-TV-Z]{26}$/),
+        tenantId: z.string().regex(/^tnt_[0-9A-HJKMNP-TV-Z]{26}$/),
+        runId: z.string().regex(/^aml_[0-9A-HJKMNP-TV-Z]{26}$/),
+        projectId: z.string().optional(),
+        algorithm: z.string(),
+        hyperparameters: z.object({}).partial().passthrough().optional(),
+        featureList: z.array(z.string()).optional(),
+        lineage: z.string().optional(),
+        minorityPrecision: z.number().optional(),
+        minorityRecall: z.number().optional(),
+        aucPr: z.number().optional(),
+        pinned: z.boolean().optional(),
+        createdAt: z.string().datetime({ offset: true }),
+        updatedAt: z.string().datetime({ offset: true }),
+      })
+      .passthrough(),
+    meta: z
+      .object({
+        requestId: z.string().uuid(),
+        correlationId: z.string(),
+        generatedAt: z.string().datetime({ offset: true }),
+      })
+      .partial()
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
+
+export const schemas: any = {
+  startAutoMLRun_Body,
+  Problem,
+  AutoMLRunId,
+  TenantId,
+  RunStatus,
+  AutoMLRun,
+  ResponseMeta,
+  AutoMLRunListResponse,
+  AutoMLRunCreate,
+  AutoMLRunResponse,
+  CandidateModelId,
+  CandidateModel,
+  CandidateModelListResponse,
+  CandidateModelResponse,
+};
+
+const endpoints = makeApi([
+  {
+    method: 'get',
+    path: '/v1/automl-runs/:runId',
+    alias: 'getAutoMLRun',
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'runId',
+        type: 'Path',
+        schema: z.string().regex(/^aml_[0-9A-HJKMNP-TV-Z]{26}$/),
+      },
+    ],
+    response: z
+      .object({
+        data: z
+          .object({
+            id: z.string().regex(/^aml_[0-9A-HJKMNP-TV-Z]{26}$/),
+            tenantId: z.string().regex(/^tnt_[0-9A-HJKMNP-TV-Z]{26}$/),
+            projectId: z.string(),
+            status: z.enum(['queued', 'running', 'completed', 'failed']),
+            candidateCount: z.number().int().optional(),
+            maxCandidates: z.number().int().optional(),
+            searchBudgetMinutes: z.number().int().optional(),
+            errorMessage: z.string().optional(),
+            createdAt: z.string().datetime({ offset: true }),
+            updatedAt: z.string().datetime({ offset: true }),
+          })
+          .passthrough(),
+        meta: z
+          .object({
+            requestId: z.string().uuid(),
+            correlationId: z.string(),
+            generatedAt: z.string().datetime({ offset: true }),
+          })
+          .partial()
+          .passthrough()
+          .optional(),
+      })
+      .passthrough(),
+    errors: [
+      {
+        status: 404,
+        description: `Resource not found`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+    ],
+  },
+  {
+    method: 'get',
+    path: '/v1/automl-runs/:runId/candidates',
+    alias: 'listCandidates',
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'runId',
+        type: 'Path',
+        schema: z.string().regex(/^aml_[0-9A-HJKMNP-TV-Z]{26}$/),
+      },
+      {
+        name: 'cursor',
+        type: 'Query',
+        schema: z.string().optional(),
+      },
+      {
+        name: 'limit',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(200).optional().default(50),
+      },
+    ],
+    response: z
+      .object({
+        data: z
+          .object({
+            items: z.array(
+              z
+                .object({
+                  id: z.string().regex(/^cnd_[0-9A-HJKMNP-TV-Z]{26}$/),
+                  tenantId: z.string().regex(/^tnt_[0-9A-HJKMNP-TV-Z]{26}$/),
+                  runId: z.string().regex(/^aml_[0-9A-HJKMNP-TV-Z]{26}$/),
+                  projectId: z.string().optional(),
+                  algorithm: z.string(),
+                  hyperparameters: z
+                    .object({})
+                    .partial()
+                    .passthrough()
+                    .optional(),
+                  featureList: z.array(z.string()).optional(),
+                  lineage: z.string().optional(),
+                  minorityPrecision: z.number().optional(),
+                  minorityRecall: z.number().optional(),
+                  aucPr: z.number().optional(),
+                  pinned: z.boolean().optional(),
+                  createdAt: z.string().datetime({ offset: true }),
+                  updatedAt: z.string().datetime({ offset: true }),
+                })
+                .passthrough()
+            ),
+            nextCursor: z.string().optional(),
+          })
+          .passthrough(),
+        meta: z
+          .object({
+            requestId: z.string().uuid(),
+            correlationId: z.string(),
+            generatedAt: z.string().datetime({ offset: true }),
+          })
+          .partial()
+          .passthrough()
+          .optional(),
+      })
+      .passthrough(),
+    errors: [
+      {
+        status: 401,
+        description: `Missing or invalid API key`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+    ],
+  },
+  {
+    method: 'get',
+    path: '/v1/candidates/:candidateId',
+    alias: 'getCandidate',
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'candidateId',
+        type: 'Path',
+        schema: z.string().regex(/^cnd_[0-9A-HJKMNP-TV-Z]{26}$/),
+      },
+    ],
+    response: z
+      .object({
+        data: z
+          .object({
+            id: z.string().regex(/^cnd_[0-9A-HJKMNP-TV-Z]{26}$/),
+            tenantId: z.string().regex(/^tnt_[0-9A-HJKMNP-TV-Z]{26}$/),
+            runId: z.string().regex(/^aml_[0-9A-HJKMNP-TV-Z]{26}$/),
+            projectId: z.string().optional(),
+            algorithm: z.string(),
+            hyperparameters: z.object({}).partial().passthrough().optional(),
+            featureList: z.array(z.string()).optional(),
+            lineage: z.string().optional(),
+            minorityPrecision: z.number().optional(),
+            minorityRecall: z.number().optional(),
+            aucPr: z.number().optional(),
+            pinned: z.boolean().optional(),
+            createdAt: z.string().datetime({ offset: true }),
+            updatedAt: z.string().datetime({ offset: true }),
+          })
+          .passthrough(),
+        meta: z
+          .object({
+            requestId: z.string().uuid(),
+            correlationId: z.string(),
+            generatedAt: z.string().datetime({ offset: true }),
+          })
+          .partial()
+          .passthrough()
+          .optional(),
+      })
+      .passthrough(),
+    errors: [
+      {
+        status: 404,
+        description: `Resource not found`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+    ],
+  },
+  {
+    method: 'get',
+    path: '/v1/projects/:projectId/automl-runs',
+    alias: 'listAutoMLRuns',
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'projectId',
+        type: 'Path',
+        schema: z.string(),
+      },
+      {
+        name: 'cursor',
+        type: 'Query',
+        schema: z.string().optional(),
+      },
+      {
+        name: 'limit',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(200).optional().default(50),
+      },
+    ],
+    response: z
+      .object({
+        data: z
+          .object({
+            items: z.array(
+              z
+                .object({
+                  id: z.string().regex(/^aml_[0-9A-HJKMNP-TV-Z]{26}$/),
+                  tenantId: z.string().regex(/^tnt_[0-9A-HJKMNP-TV-Z]{26}$/),
+                  projectId: z.string(),
+                  status: z.enum(['queued', 'running', 'completed', 'failed']),
+                  candidateCount: z.number().int().optional(),
+                  maxCandidates: z.number().int().optional(),
+                  searchBudgetMinutes: z.number().int().optional(),
+                  errorMessage: z.string().optional(),
+                  createdAt: z.string().datetime({ offset: true }),
+                  updatedAt: z.string().datetime({ offset: true }),
+                })
+                .passthrough()
+            ),
+            nextCursor: z.string().optional(),
+          })
+          .passthrough(),
+        meta: z
+          .object({
+            requestId: z.string().uuid(),
+            correlationId: z.string(),
+            generatedAt: z.string().datetime({ offset: true }),
+          })
+          .partial()
+          .passthrough()
+          .optional(),
+      })
+      .passthrough(),
+    errors: [
+      {
+        status: 401,
+        description: `Missing or invalid API key`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+    ],
+  },
+  {
+    method: 'post',
+    path: '/v1/projects/:projectId/automl-runs',
+    alias: 'startAutoMLRun',
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'body',
+        type: 'Body',
+        schema: startAutoMLRun_Body,
+      },
+      {
+        name: 'projectId',
+        type: 'Path',
+        schema: z.string(),
+      },
+      {
+        name: 'Idempotency-Key',
+        type: 'Header',
+        schema: z.string().min(1).max(128),
+      },
+    ],
+    response: z
+      .object({
+        data: z
+          .object({
+            id: z.string().regex(/^aml_[0-9A-HJKMNP-TV-Z]{26}$/),
+            tenantId: z.string().regex(/^tnt_[0-9A-HJKMNP-TV-Z]{26}$/),
+            projectId: z.string(),
+            status: z.enum(['queued', 'running', 'completed', 'failed']),
+            candidateCount: z.number().int().optional(),
+            maxCandidates: z.number().int().optional(),
+            searchBudgetMinutes: z.number().int().optional(),
+            errorMessage: z.string().optional(),
+            createdAt: z.string().datetime({ offset: true }),
+            updatedAt: z.string().datetime({ offset: true }),
+          })
+          .passthrough(),
+        meta: z
+          .object({
+            requestId: z.string().uuid(),
+            correlationId: z.string(),
+            generatedAt: z.string().datetime({ offset: true }),
+          })
+          .partial()
+          .passthrough()
+          .optional(),
+      })
+      .passthrough(),
+    errors: [
+      {
+        status: 401,
+        description: `Missing or invalid API key`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+      {
+        status: 422,
+        description: `Semantically invalid request (e.g. PACK_EMPTY)`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+    ],
+  },
+]);
+
+export const api: any = new Zodios(
+  'https://api.ddd-codegen-starter.local/v1',
+  endpoints
+);
+
+export function createApiClient(baseUrl: string, options?: ZodiosOptions): any {
+  return new Zodios(baseUrl, endpoints, options);
+}

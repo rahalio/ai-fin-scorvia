@@ -1,0 +1,132 @@
+openapi: 3.1.0
+info:
+  title: Policy schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    PolicyMapId:
+      type: string
+      pattern: '^pol_[0-9A-HJKMNP-TV-Z]{26}$'
+    PolicyMapStatus:
+      type: string
+      enum: [draft, published, retired]
+    PdBand:
+      type: object
+      required: [minPd, maxPd, decision]
+      properties:
+        minPd:
+          type: number
+        maxPd:
+          type: number
+        decision:
+          type: string
+          enum: [grant, refer, deny]
+        pricingBand:
+          type: string
+    PolicyMap:
+      type: object
+      required: [id, tenantId, name, status, version, createdAt, updatedAt]
+      x-dynamodb:
+        domain: POLICY
+        entityType: POLICY_MAP
+        entityTypePk: POLICY_MAPS
+        pkPattern: entity
+        tableType: core
+        softDeleteEnabled: false
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        gsi2Enabled: true
+        gsi2PKFields: [tenantId]
+        gsi2SKFields: [updatedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/PolicyMapId'
+        tenantId:
+          $ref: ./common/primitives.yaml#/components/schemas/TenantId
+        name:
+          type: string
+        status:
+          $ref: '#/components/schemas/PolicyMapStatus'
+        version:
+          type: integer
+        bands:
+          type: array
+          items:
+            $ref: '#/components/schemas/PdBand'
+        referralRequired:
+          type: boolean
+        projectId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PolicyMapCreate:
+      type: object
+      required: [name, bands]
+      properties:
+        name:
+          type: string
+        bands:
+          type: array
+          items:
+            $ref: '#/components/schemas/PdBand'
+        projectId:
+          type: string
+        referralRequired:
+          type: boolean
+          default: true
+    PolicySimulateRequest:
+      type: object
+      required: [pdValues]
+      properties:
+        pdValues:
+          type: array
+          items:
+            type: number
+    PolicySimulateResult:
+      type: object
+      required: [grantCount, referCount, denyCount]
+      properties:
+        grantCount:
+          type: integer
+        referCount:
+          type: integer
+        denyCount:
+          type: integer
+    PolicyMapResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PolicyMap'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    PolicyMapListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/PolicyMap'
+            nextCursor:
+              type: string
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+
+    PolicySimulateResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/PolicySimulateResult'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

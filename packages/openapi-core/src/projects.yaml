@@ -1,0 +1,127 @@
+openapi: 3.1.0
+info:
+  title: Scorvia Projects API
+  version: 0.1.0
+  description: Credit modelling project and dataset registry with PoC/production labels.
+  x-domain: prj
+  x-domain-prefix: PRJ
+  license:
+    name: Proprietary
+    url: https://scorvia.local/license
+servers:
+  - url: https://api.scorvia.local
+security:
+  - bearerAuth: []
+  - apiKey: []
+tags:
+  - name: Projects
+  - name: Datasets
+paths:
+  /v1/projects:
+    get:
+      operationId: listCreditProjects
+      summary: List Credit Projects
+      tags: [Projects]
+      x-repository: CreditProject
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./projects.schemas.yaml#/components/schemas/CreditProjectListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createCreditProject
+      summary: Create Credit Project
+      tags: [Projects]
+      x-repository: CreditProject
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./projects.schemas.yaml#/components/schemas/CreditProjectCreate
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./projects.schemas.yaml#/components/schemas/CreditProjectResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '422':
+          $ref: ./common/responses.yaml#/components/responses/UnprocessableEntity
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/projects/{projectId}:
+    parameters:
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          $ref: ./projects.schemas.yaml#/components/schemas/CreditProjectId
+    get:
+      operationId: getCreditProject
+      summary: Get Credit Project
+      tags: [Projects]
+      x-repository: CreditProject
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./projects.schemas.yaml#/components/schemas/CreditProjectResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/projects/{projectId}/datasets:
+    parameters:
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          $ref: ./projects.schemas.yaml#/components/schemas/CreditProjectId
+    post:
+      operationId: attachDataset
+      summary: Attach Dataset
+      tags: [Datasets]
+      x-repository: Dataset
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./projects.schemas.yaml#/components/schemas/DatasetAttach
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./projects.schemas.yaml#/components/schemas/DatasetResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        '422':
+          $ref: ./common/responses.yaml#/components/responses/UnprocessableEntity
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

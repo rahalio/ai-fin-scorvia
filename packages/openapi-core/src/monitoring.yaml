@@ -1,0 +1,101 @@
+openapi: 3.1.0
+info:
+  title: Scorvia Monitoring API
+  version: 0.1.0
+  description: Drift, performance, and override-rate monitoring incidents.
+  x-domain: mon
+  x-domain-prefix: MON
+  license:
+    name: Proprietary
+    url: https://scorvia.local/license
+servers:
+  - url: https://api.scorvia.local
+security:
+  - bearerAuth: []
+  - apiKey: []
+tags:
+  - name: Monitoring
+paths:
+  /v1/monitoring/incidents:
+    get:
+      operationId: listMonitoringIncidents
+      summary: List Monitoring Incidents
+      tags: [Monitoring]
+      x-repository: MonitoringIncident
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./monitoring.schemas.yaml#/components/schemas/MonitoringIncidentListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: openMonitoringIncident
+      summary: Open Monitoring Incident
+      tags: [Monitoring]
+      x-repository: MonitoringIncident
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./monitoring.schemas.yaml#/components/schemas/MonitoringIncidentCreate
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./monitoring.schemas.yaml#/components/schemas/MonitoringIncidentResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '422':
+          $ref: ./common/responses.yaml#/components/responses/UnprocessableEntity
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/monitoring/incidents/{incidentId}/dispose:
+    parameters:
+      - name: incidentId
+        in: path
+        required: true
+        schema:
+          $ref: ./monitoring.schemas.yaml#/components/schemas/MonitoringIncidentId
+    post:
+      operationId: disposeMonitoringIncident
+      summary: Dispose Monitoring Incident
+      tags: [Monitoring]
+      x-repository: MonitoringIncident
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./monitoring.schemas.yaml#/components/schemas/MonitoringIncidentDisposition
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: ./monitoring.schemas.yaml#/components/schemas/MonitoringIncidentResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

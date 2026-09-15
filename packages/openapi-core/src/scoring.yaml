@@ -1,0 +1,74 @@
+openapi: 3.1.0
+info:
+  title: Scorvia Scoring API
+  version: 0.1.0
+  description: Production credit scoring — approved models only; PoC endpoints isolated.
+  x-domain: scr
+  x-domain-prefix: SCR
+  license:
+    name: Proprietary
+    url: https://scorvia.local/license
+servers:
+  - url: https://api.scorvia.local
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: Scoring
+  - name: Deployments
+paths:
+  /v1/scoring/score:
+    post:
+      operationId: scoreApplication
+      summary: Score Application
+      tags: [Scoring]
+      x-repository: ScoreResult
+      security:
+        - apiKey: []
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./scoring.schemas.yaml#/components/schemas/ScoreRequest
+      responses:
+        '200':
+          description: Score result
+          content:
+            application/json:
+              schema:
+                $ref: ./scoring.schemas.yaml#/components/schemas/ScoreResultResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '422':
+          $ref: ./common/responses.yaml#/components/responses/UnprocessableEntity
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/scoring/deployments:
+    get:
+      operationId: listDeployments
+      summary: List Deployments
+      tags: [Deployments]
+      x-repository: ProductionDeployment
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./scoring.schemas.yaml#/components/schemas/ProductionDeploymentListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

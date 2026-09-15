@@ -1,0 +1,18 @@
+{
+  "name": "@scorvia/openapi-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenAPI contracts for Scorvia (common + identity + credit-model factory domains)",
+  "scripts": {
+    "lint:domains": "redocly lint",
+    "bundle:domains": "mkdir -p src/.bundled && redocly bundle identity --output src/.bundled/identity.openapi.yaml && redocly bundle identity --output src/.bundled/identity.json && redocly bundle projects --output src/.bundled/projects.openapi.yaml && redocly bundle projects --output src/.bundled/projects.json && redocly bundle automl --output src/.bundled/automl.openapi.yaml && redocly bundle automl --output src/.bundled/automl.json && redocly bundle evaluations --output src/.bundled/evaluations.openapi.yaml && redocly bundle evaluations --output src/.bundled/evaluations.json && redocly bundle promotions --output src/.bundled/promotions.openapi.yaml && redocly bundle promotions --output src/.bundled/promotions.json && redocly bundle policy --output src/.bundled/policy.openapi.yaml && redocly bundle policy --output src/.bundled/policy.json && redocly bundle scoring --output src/.bundled/scoring.openapi.yaml && redocly bundle scoring --output src/.bundled/scoring.json && redocly bundle referrals --output src/.bundled/referrals.openapi.yaml && redocly bundle referrals --output src/.bundled/referrals.json && redocly bundle monitoring --output src/.bundled/monitoring.openapi.yaml && redocly bundle monitoring --output src/.bundled/monitoring.json && redocly bundle audits --output src/.bundled/audits.openapi.yaml && redocly bundle audits --output src/.bundled/audits.json",
+    "lint": "pnpm run lint:domains",
+    "bundle": "pnpm run bundle:domains"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^1.34.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,13 @@
+---
+description: Never commit or push the local .codegen tool tree
+globs:
+alwaysApply: true
+---
+
+# Never commit `.codegen`
+
+- **Do not** `git add`, commit, or push `.codegen/`, `codegen/`, or any `**/zero_codegen/` tree.
+- `.codegen/` is a **local-only** generator (Python `zero_codegen` + merged config). It is listed in `.gitignore`.
+- Product OpenAPI under `packages/openapi-core/src/` **is** committed; generated `.bundled/` is not.
+- If `.codegen` appears in `git status`, leave it untracked. Never force-add it (`git add -f .codegen`).
+- Clones that need codegen must obtain the generator separately (e.g. copy from the zero-apps codegen scaffold) into `.codegen/`, then run `pnpm codegen:paths`.

@@ -1,0 +1,133 @@
+openapi: 3.1.0
+info:
+  title: Scorvia Promotions API
+  version: 0.1.0
+  description: Production promotion gates and attributable waivers.
+  x-domain: prm
+  x-domain-prefix: PRM
+  license:
+    name: Proprietary
+    url: https://scorvia.local/license
+servers:
+  - url: https://api.scorvia.local
+security:
+  - bearerAuth: []
+  - apiKey: []
+tags:
+  - name: Promotions
+paths:
+  /v1/candidates/{candidateId}/promotions:
+    parameters:
+      - name: candidateId
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: requestPromotion
+      summary: Request Promotion
+      tags: [Promotions]
+      x-repository: PromotionGate
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./promotions.schemas.yaml#/components/schemas/PromotionRequest
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./promotions.schemas.yaml#/components/schemas/PromotionGateResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '422':
+          $ref: ./common/responses.yaml#/components/responses/UnprocessableEntity
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/promotions:
+    get:
+      operationId: listPromotions
+      summary: List Promotions
+      tags: [Promotions]
+      x-repository: PromotionGate
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./promotions.schemas.yaml#/components/schemas/PromotionGateListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/promotions/{promotionId}:
+    parameters:
+      - name: promotionId
+        in: path
+        required: true
+        schema:
+          $ref: ./promotions.schemas.yaml#/components/schemas/PromotionGateId
+    get:
+      operationId: getPromotion
+      summary: Get Promotion
+      tags: [Promotions]
+      x-repository: PromotionGate
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ./promotions.schemas.yaml#/components/schemas/PromotionGateResponse
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/promotions/{promotionId}/decide:
+    parameters:
+      - name: promotionId
+        in: path
+        required: true
+        schema:
+          $ref: ./promotions.schemas.yaml#/components/schemas/PromotionGateId
+    post:
+      operationId: decidePromotion
+      summary: Decide Promotion
+      tags: [Promotions]
+      x-repository: PromotionGate
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./promotions.schemas.yaml#/components/schemas/PromotionDecision
+      responses:
+        '200':
+          description: Decided
+          content:
+            application/json:
+              schema:
+                $ref: ./promotions.schemas.yaml#/components/schemas/PromotionGateResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '422':
+          $ref: ./common/responses.yaml#/components/responses/UnprocessableEntity
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

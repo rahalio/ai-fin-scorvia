@@ -1,3 +1,6 @@
+# RETIRED as live contract — canonical OpenAPI is packages/openapi-core/src/{domain}.yaml.
+# Kept as historical inventory from the product pack seed.
+
 openapi: 3.0.3
 info:
   title: Scorvia
